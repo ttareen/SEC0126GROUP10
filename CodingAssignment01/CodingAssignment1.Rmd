@@ -18,6 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
+`added line to histogram which I liked (+0.5)`
 
 A Florida health insurance company wants to predict annual claims for individual clients. The company pulls a random sample of 50 customers. The owner wishes to charge an actuarially fair premium to ensure a normal rate of return. The owner collects all of their current customer’s health care expenses from the last year and compares them with what is known about each customer’s plan. 
 
