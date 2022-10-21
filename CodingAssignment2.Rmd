@@ -1,0 +1,151 @@
+---
+title: "Coding Assignment 2"
+author: "Team N"
+date: "Due: 2021-10-23 23:59"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+#Put any packages you need here
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+A Florida health insurance company wants to predict annual claims for individual clients. The company pulls a random sample of 50 customers. The owner wishes to charge an actuarially fair premium to ensure a normal rate of return. The owner collects all of their current customer’s health care expenses from the last year and compares them with what is known about each customer’s plan. 
+
+The data on the 50 customers in the sample is as follows:
+
+-	Charges: Total medical expenses for a particular insurance plan (in dollars)
+-	Age: Age of the primary beneficiary
+-	BMI: Primary beneficiary’s body mass index (kg/m2)
+-	Female: Primary beneficiary’s birth sex (0 = Male, 1 = Female)
+-	Children: Number of children covered by health insurance plan (includes other dependents as well)
+-	Smoker: Indicator if primary beneficiary is a smoker (0 = non-smoker, 1 = smoker)
+-	Cities: Dummy variables for each city with the default being Sanford
+
+Answer the following questions using complete sentences and attach all output, plots, etc. within this report.
+
+
+```{r dataset, include=FALSE}
+insurance <- read.csv("../Data/insurance_0126_Group10.csv")
+```
+
+
+
+## Question 1
+
+Generate this regression equation:
+
+$$Charges = \beta_{0}+\beta_{1}*Age+\beta_{2}*BMI+\beta_{3}*Children + \beta_{4}*Female + \beta_{5}*Smoker + \beta_{6}*WinterSprings + \beta_{7}*WinterPark + \beta_{8}*Oviedo$$
+
+```{r q1} 
+insurance <- lm(Charges ~ Age + BMI + Children + Female + Smoker + WinterSprings + WinterPark + Oviedo, data = insurance)
+
+summary(insurance)
+```
+$$Charges ={-18140.8}+{199.1}*Age+{643.4}*BMI{-187.2}*Children + {1465.5}*Female+{24548.2}*Smoker{-2672.2}*WinterSprings {-5045.6}*WinterPark+{1671.7}*Oviedo$$
+Which independent variables test significant in a two-tailed test? Use $\alpha = 0.2$
+$P<\alpha$
+$$AGE-PValue = {0.004160}<\alpha$$
+Age: At α = .02 level, p is less than α, reject null hypothesis, conclude Age has significant effect on charges. 
+
+$$BMI-PValue = {0.00281}<\alpha$$
+BMI: At α = .02 level, p is less than α, reject null hypothesis, conclude BMI has significant effect on charges. 
+
+$$Smoker-PValue = {9.35e-13}<\alpha$$
+Smoker: At α = .02 level, p is less than α, reject null hypothesis, conclude Smoker has significant effect on charges. 
+
+$$WinterPark-PValue = {0.050341}<\alpha$$
+Winter Park: At α = .02 level, p is less than α, reject null hypothesis, conclude Winter Park has significant effect on charges. 
+
+## Question 2
+
+Interpret the coefficients of all the independent variables that tested significant.
+
+$$Charges ={-18140.8}+{199.1}*Age+{643.4}*BMI{-187.2}*Smoker{-2672.2}*WinterPark+{1671.7}$$
+Coefficient of Age: 199.1; on average, all else equal, each additional year in Age will increase charges by $199.1.
+
+Coefficient of Winter Park: 1671.7; on average, all else equal, charges are $1671.7 higher for residents of Winter Park than residents of Sanford
+
+BMI and Smoker have a significant inverse effect on charges (decrease charges). 
+
+Coefficient of BMI: -187.2; on average, all else equal, each additional unit of BMI will decrease charges by $187.2.
+
+Coefficient of Smoker: -2672.2; on average, all else equal, charges are $-2672.2 ;lower for smokers than non-smokers
+
+## Question 3
+
+The insurance agent returns with another client:
+
+- Age: 35
+- BMI: 26
+- Children: 1
+- Gender: Female
+- Smoker: No
+- City: Sanford
+$$Charges ={-18140.8}+{199.1}*Age+{643.4}*BMI{-187.2}*Children + {1465.5}*Female+{24548.2}*Smoker{-2672.2}*WinterSprings {-5045.6}*WinterPark+{1671.7}*Oviedo$$
+
+Using the regression equation above, predict the amount of medical expenses associated with this policy. (Provide a 95% confidence interval as well)
+
+
+``` {r q3}
+newPrediction <- data.frame(Age = 35,
+                            BMI = 26,
+                            Children = 1,
+                            Female = 1,
+                            Smoker = 0,
+                            WinterSprings = 0,
+                            WinterPark = 0,
+                            Oviedo = 0)
+
+predict(insurance, newdata = newPrediction,
+        interval = "confidence",
+        level = .95)
+```
+Charges = 6833.54
+
+95% confidence interval: 
+{2348.908, 11318.17}
+
+## Question 4
+
+Compare the model from question 1, to a model that does not include the group of city dummies. Does including the cities reduce the SSE by a statistically significant amount? (check the partial F-test for significance of the dummies as a group). Use $\alpha = 0.05$
+```{r q4} 
+insurance <- lm(Charges ~ Age + BMI + Children + Female + Smoker + WinterSprings + WinterPark + Oviedo, data = insurance)
+
+summary(insurance)
+```
+```{r}
+nnewPrediction <- data.frame(Age = 35,
+                            BMI = 26,
+                            Children = 1,
+                            Female = 1,
+                            Smoker = 0,
+                            WinterSprings = 0,
+                            WinterPark = 0,
+                            Oviedo = 0)
+
+predict(insurance, newdata = newPrediction,
+        interval = "confidence",
+        level = .95)
+```
+```{r}
+
+reduced_sat <- sat[,-(1:3)] # drops first 3 columns
+
+model_reduced <- lm(SAT ~. , data = reduced_sat)
+
+summary(model_reduced)
+```
+```{r q4}
+anova(insurance, model_reduced)
+```
+F = [(SSEreduced - SSEfull)/m]/MSEfull
+F = 
+F = 
+Critical F-Value = 
+F  Critical F-Value
+
+
