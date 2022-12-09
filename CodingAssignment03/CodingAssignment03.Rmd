@@ -11,6 +11,7 @@ output:
 ```{r setup, include=FALSE}
 #Put any packages you need here
 knitr::opts_chunk$set(echo = TRUE)
+library(poltly)
 ```
 
 A Florida health insurance company wants to predict annual claims for individual clients. The company pulls a random sample of 50 customers. The owner wishes to charge an actuarially fair premium to ensure a normal rate of return. The owner collects all of their current customer’s health care expenses from the last year and compares them with what is known about each customer’s plan. 
@@ -29,9 +30,12 @@ Answer the following questions using complete sentences and attach all output, p
 
 
 ```{r dataset, include=FALSE}
-# Bring in the dataset here.
+insurance <- read.csv("../Data/insurance_0126_Group10.csv")
 ```
 
+```{r 2}
+bad_model <- lm (Charges ~., data = insurance)
+```
 
 
 ## Question 1
@@ -39,8 +43,18 @@ Answer the following questions using complete sentences and attach all output, p
 Randomly select three observations from the sample and exclude from all modeling (i.e. n=47). Provide the summary statistics (min, max, std, mean, median) of the quantitative variables for the 47 observations.
 
 ```{r q1}
+summary(insurance)
+```
+```{r q1}
+set.seed(123457)
+index = sample(seq_len(nrow(insurance)), size = 3)
 
+train = insurance[-index,]
+test = insurance[index,]
+```
 
+```{r q1}
+summary(train)
 ```
 
 
@@ -49,38 +63,110 @@ Randomly select three observations from the sample and exclude from all modeling
 Provide the correlation between all quantitative variables
 
 ```{r}
-
+scatterplotMatrix(train[,1:4])
 ```
+```{r}
+cor(train[,1:4])
+```
+
 
 
 ## Question 3
 
 Run a regression that includes all independent variables in the data table. Does the model above violate any of the Gauss-Markov assumptions? If so, what are they and what is the solution for correcting?
 
+```{r q3, echo=FALSE}
+summary(insurance)
+```
 
 ## Question 4
 
 Implement the solutions from question 3, such as data transformation, along with any other changes you wish. Use the sample data and run a new regression. How have the fit measures changed? How have the signs and significance of the coefficients changed?
 
-```{r q3}
+Look up research article - no code
+```{r q4}
+test$Charges < - log(test$Charges)
+test$Age < - log(test$Age)
+test$agesquared < - test$age^2
+```
+```{r }
+test$bad_model_pred <- predict(bad_model, newdata = test)
+```
 
+```{r }
+test$model_1_pred <- predict(model_1, newdata = test) %>% exp()
+```
+```{r}
+test$model_2pred < - predict(model_2,newdata = test) %>% exp()
+```
+```{r }
+test$error_bm < - test$bad_model_pred - test$Charges
+
+test$error_1 < -  test$model_1_pred - test$Charges
+
+test$error_2 <- test$model_2_pred - test$Charges
 ```
 
 ## Question 5
 
 Use the 3 withheld observations and calculate the performance measures for your best two models. Which is the better model? (remember that "better" depends on whether your outlook is short or long run)
 
-```{r q4}
-
+```{r q5}
+par(mfrow=c(1,2))
+hist(train$Charges)
+trainCharges = log(train$Charges)
+his(train$Charges)
 ```
-
+```{r q5}
+scatterplotMatrix(train[,c(13,2,3,4)])
+```
+```{r q5}
+train$Age = log(train$Age)
+train$AgeSquared = train$Age^2
+```
+```{r q}
+model_1 <- lm(Charges ~., data=train[c(1:8)] )
+```
+```{r q}
+summary(model_1)
+par(mfrow=c(2,2))
+plot(model_1)
+```
+```{r q}
+model_2 <- lm(Charges ~., data=train[c(1:8)] )
+```
+```{r}
+summary(model_2)
+par(mfrow=c(2,2))
+plot(model_2)
+```
 
 ## Question 6
 
 Provide interpretations of the coefficients, do the signs make sense? Perform marginal change analysis (thing 2) on the independent variables.
-
 ```{r}
-
+summary(bad_model)
+```
+```{r}
+summary(model_1)
+```
+```{r}
+summary(model_2)
+```
+```{r}
+test$Charges <- log(test$Charges)
+test$Age <- log(test$Age)
+test$ageSquared <- test$age^2
+```
+```{r}
+test$bad_model_pred <- predict(bad_model, newdata = test)
+test$model_1_pred <- predict(model_1, newdata = test) %>% exp()
+test$model_2pred <- predict(model_2,newdata = test) %>% exp()
+```
+```{r}
+test$error_bad_model 
+test$model_1_pred - test$Charges
+test$error_2 <- test$model_2_pred -test$Charges
 ```
 
 ## Question 7
@@ -97,12 +183,43 @@ An eager insurance representative comes back with five potential clients. Using 
 
 
 ```{r}
-
+mean(test$error_bm)
+mean(test$error_1)
+mean(test$error_2)
+```
+```{r}
+mae = function(error_bm){error_bm%%
+    abs()%%
+    mean()}
+mae(test$error_bm)
+mae(test$error_1)
+mae(test$error_2)
+```
+```{r}
+rmse = function(error_bm){error_bm^2%%
+    mean()%%
+    sqrt()}
+rmse(test$error_bm)
+rmse(test$error_1)
+rmse(test$error_2)
+```
+```{r}
+mape = funciton(error_bm, actual_bm){(error_bm/actual_bm) %%
+  abs() %%
+mean()}
+mape(test$error_bm, test$Charges)
+mape(test$error_1, test$Charges)
+mape(test$error_2, test$Charges)
 ```
 
 ## Question 8
 
 The owner notices that some of the predictions are wider than others, explain why.
+
+Looking at these three models, the initial model was the worst performing (not surprising). Looking at the
+other two, the logarithmic relationship has lower bias, MAE, and MAPE. Model 2 has a lower RMSE meaning
+that there were not large prediction errors. Picking which model would depend on your time preference. If
+you are looking at the short-run, then Model 2. Model 1 if you are looking at the long-run.
 
 ## Question 9 
 
